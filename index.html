@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corposesenta - Sistema Contable</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    background:#0f172a;
+    color:white;
+}
+
+.container{
+    display:flex;
+    min-height:100vh;
+}
+
+.sidebar{
+    width:260px;
+    background:#111827;
+    padding:25px;
+    border-right:1px solid rgba(255,255,255,.06);
+}
+
+.logo{
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:35px;
+    color:#60a5fa;
+}
+
+.menu button{
+    width:100%;
+    margin-bottom:10px;
+    border:none;
+    padding:14px;
+    border-radius:12px;
+    background:#1e293b;
+    color:white;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.menu button:hover{
+    background:#2563eb;
+}
+
+.main{
+    flex:1;
+    padding:30px;
+}
+
+.title{
+    font-size:32px;
+    margin-bottom:25px;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.card{
+    background:#1e293b;
+    padding:24px;
+    border-radius:18px;
+}
+
+.card h3{
+    color:#94a3b8;
+    margin-bottom:12px;
+}
+
+.card p{
+    font-size:30px;
+    font-weight:700;
+}
+
+.section{
+    background:#1e293b;
+    padding:25px;
+    border-radius:18px;
+    margin-bottom:25px;
+}
+
+.section h2{
+    margin-bottom:20px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:15px;
+}
+
+input, select{
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:#0f172a;
+    color:white;
+}
+
+button.action{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:14px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+button.export{
+    background:#16a34a;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th, td{
+    padding:14px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    text-align:left;
+}
+
+th{
+    color:#94a3b8;
+}
+
+.ingreso{
+    color:#22c55e;
+    font-weight:600;
+}
+
+.egreso{
+    color:#ef4444;
+    font-weight:600;
+}
+
+.badge{
+    padding:6px 10px;
+    border-radius:10px;
+    font-size:12px;
+    font-weight:600;
+}
+
+.pagado{
+    background:#14532d;
+}
+
+.pendiente{
+    background:#7f1d1d;
+}
+
+@media(max-width:900px){
+
+    .container{
+        flex-direction:column;
+    }
+
+    .sidebar{
+        width:100%;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            CORPOSESENTA
+        </div>
+
+        <div class="menu">
+            <button onclick="showSection('dashboard')">Dashboard</button>
+            <button onclick="showSection('asociados')">Asociados</button>
+            <button onclick="showSection('tesoreria')">Tesorería</button>
+            <button onclick="showSection('movimientos')">Movimientos</button>
+            <button onclick="showSection('cronograma')">Cronograma</button>
+        </div>
+
+    </aside>
+
+    <main class="main">
+
+        <div id="dashboard">
+
+            <div class="title">
+                Sistema Contable y Financiero
+            </div>
+
+            <div class="cards">
+
+                <div class="card">
+                    <h3>Total Asociados</h3>
+                    <p id="totalAsociados">0</p>
+                </div>
+
+                <div class="card">
+                    <h3>Ingresos</h3>
+                    <p id="totalIngresos">$0</p>
+                </div>
+
+                <div class="card">
+                    <h3>Egresos</h3>
+                    <p id="totalEgresos">$0</p>
+                </div>
+
+                <div class="card">
+                    <h3>Balance</h3>
+                    <p id="balance">$0</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ASOCIADOS -->
+
+        <div class="section" id="asociadosSection">
+
+            <h2>Registro de Asociados</h2>
+
+            <div class="grid">
+
+                <input type="text" id="nombre" placeholder="Nombre">
+
+                <input type="text" id="identificacion" placeholder="Identificación">
+
+                <input type="text" id="direccion" placeholder="Dirección">
+
+                <input type="text" id="telefono" placeholder="Teléfono">
+
+                <input type="text" id="eps" placeholder="EPS">
+
+                <input type="text" id="posicion" placeholder="Posición de juego">
+
+                <button class="action" onclick="agregarAsociado()">
+                    Guardar Asociado
+                </button>
+
+            </div>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>ID</th>
+                        <th>Teléfono</th>
+                        <th>EPS</th>
+                        <th>Posición</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaAsociados"></tbody>
+
+            </table>
+
+        </div>
+
+        <!-- TESORERIA -->
+
+        <div class="section" id="tesoreriaSection">
+
+            <h2>Estado de Cuenta</h2>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Asociado</th>
+                        <th>Concepto</th>
+                        <th>Valor</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaTesoreria"></tbody>
+
+            </table>
+
+        </div>
+
+        <!-- MOVIMIENTOS -->
+
+        <div class="section" id="movimientosSection">
+
+            <h2>Movimientos Tesorería</h2>
+
+            <div class="grid">
+
+                <input type="text" id="detalleMovimiento" placeholder="Detalle">
+
+                <input type="number" id="valorMovimiento" placeholder="Valor">
+
+                <select id="tipoMovimiento">
+                    <option value="Ingreso">Ingreso</option>
+                    <option value="Egreso">Egreso</option>
+                </select>
+
+                <button class="action" onclick="agregarMovimiento()">
+                    Registrar Movimiento
+                </button>
+
+            </div>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Detalle</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaMovimientos"></tbody>
+
+            </table>
+
+            <br>
+
+            <button class="action export" onclick="exportarExcel()">
+                Exportar a Excel
+            </button>
+
+        </div>
+
+        <!-- CRONOGRAMA -->
+
+        <div class="section" id="cronogramaSection">
+
+            <h2>Cronograma Primer Semestre 2026</h2>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Mes</th>
+                        <th>Fecha Límite</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>Inicio Torneo 2026</td>
+                        <td>Enero 2026</td>
+                        <td>14 Febrero</td>
+                    </tr>
+
+                    <tr>
+                        <td>Sostenimiento Febrero</td>
+                        <td>Febrero 2026</td>
+                        <td>28 Febrero</td>
+                    </tr>
+
+                    <tr>
+                        <td>Sostenimiento Marzo</td>
+                        <td>Marzo 2026</td>
+                        <td>21 Marzo</td>
+                    </tr>
+
+                    <tr>
+                        <td>Sostenimiento Abril</td>
+                        <td>Abril 2026</td>
+                        <td>26 Abril</td>
+                    </tr>
+
+                    <tr>
+                        <td>Sostenimiento Mayo</td>
+                        <td>Mayo 2026</td>
+                        <td>24 Mayo</td>
+                    </tr>
+
+                    <tr>
+                        <td>Sostenimiento Junio</td>
+                        <td>Junio 2026</td>
+                        <td>20 Junio</td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script>
+
+let asociados = JSON.parse(localStorage.getItem("asociados")) || [];
+let movimientos = JSON.parse(localStorage.getItem("movimientos")) || [];
+
+function guardarDatos(){
+    localStorage.setItem("asociados", JSON.stringify(asociados));
+    localStorage.setItem("movimientos", JSON.stringify(movimientos));
+}
+
+function agregarAsociado(){
+
+    const asociado = {
+
+        nombre: document.getElementById("nombre").value,
+        identificacion: document.getElementById("identificacion").value,
+        direccion: document.getElementById("direccion").value,
+        telefono: document.getElementById("telefono").value,
+        eps: document.getElementById("eps").value,
+        posicion: document.getElementById("posicion").value
+
+    };
+
+    asociados.push(asociado);
+
+    guardarDatos();
+
+    renderAsociados();
+
+    generarCuota(asociado.nombre);
+
+}
+
+function renderAsociados(){
+
+    const tabla = document.getElementById("tablaAsociados");
+
+    tabla.innerHTML = "";
+
+    asociados.forEach(a=>{
+
+        tabla.innerHTML += `
+        <tr>
+            <td>${a.nombre}</td>
+            <td>${a.identificacion}</td>
+            <td>${a.telefono}</td>
+            <td>${a.eps}</td>
+            <td>${a.posicion}</td>
+        </tr>
+        `;
+
+    });
+
+    document.getElementById("totalAsociados").innerText = asociados.length;
+
+}
+
+function generarCuota(nombre){
+
+    const tabla = document.getElementById("tablaTesoreria");
+
+    tabla.innerHTML += `
+    <tr>
+        <td>${nombre}</td>
+        <td>Sostenimiento mensual</td>
+        <td>$30.000</td>
+        <td><span class="badge pendiente">Pendiente</span></td>
+    </tr>
+    `;
+
+}
+
+function agregarMovimiento(){
+
+    const movimiento = {
+
+        detalle: document.getElementById("detalleMovimiento").value,
+        valor: parseFloat(document.getElementById("valorMovimiento").value),
+        tipo: document.getElementById("tipoMovimiento").value
+
+    };
+
+    movimientos.push(movimiento);
+
+    guardarDatos();
+
+    renderMovimientos();
+
+}
+
+function renderMovimientos(){
+
+    const tabla = document.getElementById("tablaMovimientos");
+
+    tabla.innerHTML = "";
+
+    let ingresos = 0;
+    let egresos = 0;
+
+    movimientos.forEach(m=>{
+
+        if(m.tipo === "Ingreso"){
+            ingresos += m.valor;
+        }else{
+            egresos += m.valor;
+        }
+
+        tabla.innerHTML += `
+        <tr>
+            <td>${m.detalle}</td>
+            <td>${m.tipo}</td>
+            <td class="${m.tipo === 'Ingreso' ? 'ingreso':'egreso'}">
+                $${m.valor.toLocaleString()}
+            </td>
+        </tr>
+        `;
+
+    });
+
+    document.getElementById("totalIngresos").innerText =
+        "$" + ingresos.toLocaleString();
+
+    document.getElementById("totalEgresos").innerText =
+        "$" + egresos.toLocaleString();
+
+    document.getElementById("balance").innerText =
+        "$" + (ingresos-egresos).toLocaleString();
+
+}
+
+function exportarExcel(){
+
+    const wb = XLSX.utils.book_new();
+
+    const ws1 = XLSX.utils.json_to_sheet(asociados);
+    XLSX.utils.book_append_sheet(wb, ws1, "Asociados");
+
+    const ws2 = XLSX.utils.json_to_sheet(movimientos);
+    XLSX.utils.book_append_sheet(wb, ws2, "Tesoreria");
+
+    XLSX.writeFile(wb, "Corposesenta.xlsx");
+
+}
+
+function showSection(id){
+
+    document.getElementById("dashboard").style.display="none";
+    document.getElementById("asociadosSection").style.display="none";
+    document.getElementById("tesoreriaSection").style.display="none";
+    document.getElementById("movimientosSection").style.display="none";
+    document.getElementById("cronogramaSection").style.display="none";
+
+    if(id==="dashboard"){
+        document.getElementById("dashboard").style.display="block";
+    }
+
+    if(id==="asociados"){
+        document.getElementById("asociadosSection").style.display="block";
+    }
+
+    if(id==="tesoreria"){
+        document.getElementById("tesoreriaSection").style.display="block";
+    }
+
+    if(id==="movimientos"){
+        document.getElementById("movimientosSection").style.display="block";
+    }
+
+    if(id==="cronograma"){
+        document.getElementById("cronogramaSection").style.display="block";
+    }
+
+}
+
+renderAsociados();
+renderMovimientos();
+
+showSection('dashboard');
+
+</script>
+
+</body>
+</html>
